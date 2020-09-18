@@ -57,8 +57,11 @@ if (process.env.NODE_ENV !== 'production') {
       const has = key in target
       const isAllowed = allowedGlobals(key) ||
         (typeof key === 'string' && key.charAt(0) === '_' && !(key in target.$data))
+      // 不满足以下其中一个(全局属性、_字符串且不在target.$data属性中)
       if (!has && !isAllowed) {
+        // 如果在$data里面由就报命名出现_或$的警告
         if (key in target.$data) warnReservedPrefix(target, key)
+        // 报使用了没有在data中定义的值的警告
         else warnNonPresent(target, key)
       }
       return has || !isAllowed
@@ -76,9 +79,11 @@ if (process.env.NODE_ENV !== 'production') {
   }
 
   initProxy = function initProxy (vm) {
+    // 判断浏览器是否支持Proxy
     if (hasProxy) {
       // determine which proxy handler to use
       const options = vm.$options
+      // 判断使用哪一个handler
       const handlers = options.render && options.render._withStripped
         ? getHandler
         : hasHandler

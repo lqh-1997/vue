@@ -15,26 +15,31 @@ export function initExtend (Vue: GlobalAPI) {
 
   /**
    * Class inheritance
+   * 静态方法 this指向Vue
    */
   Vue.extend = function (extendOptions: Object): Function {
     extendOptions = extendOptions || {}
     const Super = this
     const SuperId = Super.cid
     const cachedCtors = extendOptions._Ctor || (extendOptions._Ctor = {})
+    // 缓存优化 如果SuperId相同说明是同一个父构造器 直接返回即可
     if (cachedCtors[SuperId]) {
       return cachedCtors[SuperId]
     }
 
+    // 拿到组件name并做一层校验(比如说不能是html内置标签 还有一些命名规则之类的)
     const name = extendOptions.name || Super.options.name
     if (process.env.NODE_ENV !== 'production' && name) {
       validateComponentName(name)
     }
 
+    // 以下内容就是让Sub拥有Vue的能力
     const Sub = function VueComponent (options) {
       this._init(options)
     }
     Sub.prototype = Object.create(Super.prototype)
     Sub.prototype.constructor = Sub
+    // 唯一确定的id
     Sub.cid = cid++
     Sub.options = mergeOptions(
       Super.options,

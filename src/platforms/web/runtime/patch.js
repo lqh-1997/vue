@@ -9,4 +9,5 @@ import platformModules from 'web/runtime/modules/index'
 // built-in modules have been applied.
 const modules = platformModules.concat(baseModules)
 
+// modules是和平台相关的 nodeOps里面都是一些操作dom的方法 函数柯里化
 export const patch: Function = createPatchFunction({ nodeOps, modules })

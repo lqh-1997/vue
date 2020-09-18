@@ -56,8 +56,10 @@ export function initLifecycle (vm: Component) {
 }
 
 export function lifecycleMixin (Vue: Class<Component>) {
+  // update调用时机有两个 一个是首次渲染将vnode渲染成真实的dom 或者当数据改变的时候视图变化也会调用update
   Vue.prototype._update = function (vnode: VNode, hydrating?: boolean) {
     const vm: Component = this
+    // 数据更新前的el vnode
     const prevEl = vm.$el
     const prevVnode = vm._vnode
     const restoreActiveInstance = setActiveInstance(vm)
@@ -65,7 +67,8 @@ export function lifecycleMixin (Vue: Class<Component>) {
     // Vue.prototype.__patch__ is injected in entry points
     // based on the rendering backend used.
     if (!prevVnode) {
-      // initial render
+      // 如果不存在更新前的vnode 初始化render 比如说首次渲染的时候逻辑就会走这个地方
+      // __patch__在入口定义`src/platforms/web/runtime/index` 第一个参数为真实的dom，第二个为vDom
       vm.$el = vm.__patch__(vm.$el, vnode, hydrating, false /* removeOnly */)
     } else {
       // updates
@@ -143,13 +146,15 @@ export function mountComponent (
   el: ?Element,
   hydrating?: boolean
 ): Component {
+  // 缓存el
   vm.$el = el
+  // 判断有没有render函数
   if (!vm.$options.render) {
+    // 将render定义为生成一个空的vnode函数
     vm.$options.render = createEmptyVNode
     if (process.env.NODE_ENV !== 'production') {
       /* istanbul ignore if */
-      if ((vm.$options.template && vm.$options.template.charAt(0) !== '#') ||
-        vm.$options.el || el) {
+      if ((vm.$options.template && vm.$options.template.charAt(0) !== '#') || vm.$options.el || el) {
         warn(
           'You are using the runtime-only build of Vue where the template ' +
           'compiler is not available. Either pre-compile the templates into ' +
@@ -187,6 +192,7 @@ export function mountComponent (
     }
   } else {
     updateComponent = () => {
+      // 调用Vue原型上的_render()方法(core/instance/render)，然后再调用_update()
       vm._update(vm._render(), hydrating)
     }
   }
@@ -194,6 +200,7 @@ export function mountComponent (
   // we set this to vm._watcher inside the watcher's constructor
   // since the watcher's initial patch may call $forceUpdate (e.g. inside child
   // component's mounted hook), which relies on vm._watcher being already defined
+  // 渲染watcher，和响应式原理相关的一个类(观察者模式)
   new Watcher(vm, updateComponent, noop, {
     before () {
       if (vm._isMounted && !vm._isDestroyed) {
@@ -205,6 +212,7 @@ export function mountComponent (
 
   // manually mounted instance, call mounted on self
   // mounted is called for render-created child components in its inserted hook
+  // $vnode实际上就是父vnode
   if (vm.$vnode == null) {
     vm._isMounted = true
     callHook(vm, 'mounted')

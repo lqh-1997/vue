@@ -73,6 +73,8 @@ export function createPatchFunction (backend) {
 
   const { modules, nodeOps } = backend
 
+  // cbs拿到所有模块的钩子 比如说attr的create和update钩子
+  // 所以在patch执行的时候就会去执行相对于的模块的钩子函数
   for (i = 0; i < hooks.length; ++i) {
     cbs[hooks[i]] = []
     for (j = 0; j < modules.length; ++j) {
@@ -141,6 +143,7 @@ export function createPatchFunction (backend) {
     }
 
     vnode.isRootInsert = !nested // for transition enter check
+    // 组件的patch 会走这个逻辑
     if (createComponent(vnode, insertedVnodeQueue, parentElm, refElm)) {
       return
     }
@@ -740,14 +743,17 @@ export function createPatchFunction (backend) {
           }
           // either not server-rendered, or hydration failed.
           // create an empty node and replace it
+          // 将真实的dom转换成vNode
           oldVnode = emptyNodeAt(oldVnode)
         }
 
         // replacing existing element
+        // 这个就是真实的dom
         const oldElm = oldVnode.elm
         const parentElm = nodeOps.parentNode(oldElm)
 
         // create new node
+        // 将vNode挂载在真实的dom上
         createElm(
           vnode,
           insertedVnodeQueue,

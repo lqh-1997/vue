@@ -43,6 +43,9 @@ export class Observer {
     this.value = value
     this.dep = new Dep()
     this.vmCount = 0
+    // def实际就是对defineProperty进行一次封装
+    // 这里就是给value添加一个__ob__属性并且该属性的值就为当前实例
+    // 这里不写成value.__ob__ = this的原因是为了不在walk中遍历属性的时候也遍历__ob__
     def(value, '__ob__', this)
     if (Array.isArray(value)) {
       if (hasProto) {
@@ -50,8 +53,10 @@ export class Observer {
       } else {
         copyAugment(value, arrayMethods, arrayKeys)
       }
+      // 遍历数组每一项 然后调用observe
       this.observeArray(value)
     } else {
+      // 遍历对象上所有的属性 然后调用defineReactive()
       this.walk(value)
     }
   }
@@ -108,17 +113,23 @@ function copyAugment (target: Object, src: Object, keys: Array<string>) {
  * or the existing observer if the value already has one.
  */
 export function observe (value: any, asRootData: ?boolean): Observer | void {
+  // 要观测的value必须是一个对象 并且 不能是VNode的实例
   if (!isObject(value) || value instanceof VNode) {
     return
   }
   let ob: Observer | void
+  // 如果value有__ob__属性 并且 这个属性是Observer实例则直接将ob返回
   if (hasOwn(value, '__ob__') && value.__ob__ instanceof Observer) {
     ob = value.__ob__
   } else if (
+    // 这个值被toggleObserving(Boolean)控制
     shouldObserve &&
     !isServerRendering() &&
+    // 是数组 或者 是对象
     (Array.isArray(value) || isPlainObject(value)) &&
+    // 该对象为可扩展的
     Object.isExtensible(value) &&
+    // 不是Vue实例
     !value._isVue
   ) {
     ob = new Observer(value)
@@ -131,6 +142,7 @@ export function observe (value: any, asRootData: ?boolean): Observer | void {
 
 /**
  * Define a reactive property on an Object.
+ * 把对象的属性变成响应式
  */
 export function defineReactive (
   obj: Object,
@@ -141,6 +153,10 @@ export function defineReactive (
 ) {
   const dep = new Dep()
 
+  // 方法返回指定对象上一个'自有属性'对应的属性描述符
+  // 自有属性指的是直接赋予该对象的属性，不需要从原型链上进行查找的属性
+  // 返回结果比如说
+  // Object { value: 0, writable: true, enumerable: true, configurable: true }
   const property = Object.getOwnPropertyDescriptor(obj, key)
   if (property && property.configurable === false) {
     return
@@ -158,7 +174,9 @@ export function defineReactive (
     enumerable: true,
     configurable: true,
     get: function reactiveGetter () {
+      // 判断有没有getter, 有就做计算 没有就返回
       const value = getter ? getter.call(obj) : val
+      // 依赖收集的过程
       if (Dep.target) {
         dep.depend()
         if (childOb) {

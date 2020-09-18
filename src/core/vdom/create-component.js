@@ -101,6 +101,7 @@ const hooksToMerge = Object.keys(componentVNodeHooks)
 export function createComponent (
   Ctor: Class<Component> | Function | Object | void,
   data: ?VNodeData,
+  // vm实例
   context: Component,
   children: ?Array<VNode>,
   tag?: string
@@ -109,15 +110,18 @@ export function createComponent (
     return
   }
 
+  // Vue
   const baseCtor = context.$options._base
 
   // plain options object: turn it into a constructor
+  // 如果Ctor是一个对象，就会使用Vue.extend 返回一个函数
   if (isObject(Ctor)) {
     Ctor = baseCtor.extend(Ctor)
   }
 
   // if at this stage it's not a constructor or an async component factory,
   // reject.
+  // 不是函数 就报警告
   if (typeof Ctor !== 'function') {
     if (process.env.NODE_ENV !== 'production') {
       warn(`Invalid Component definition: ${String(Ctor)}`, context)
@@ -126,7 +130,9 @@ export function createComponent (
   }
 
   // async component
+  // 异步组件的处理
   let asyncFactory
+  // 工厂函数不包含cid 逻辑往下走
   if (isUndef(Ctor.cid)) {
     asyncFactory = Ctor
     Ctor = resolveAsyncComponent(asyncFactory, baseCtor)
@@ -183,10 +189,12 @@ export function createComponent (
   }
 
   // install component management hooks onto the placeholder node
+  // 安装组件的钩子
   installComponentHooks(data)
 
   // return a placeholder vnode
   const name = Ctor.options.name || tag
+  // 创建vNode children text elm为undefined 但是第七个参数componentOptions里面包含了children等信息
   const vnode = new VNode(
     `vue-component-${Ctor.cid}${name ? `-${name}` : ''}`,
     data, undefined, undefined, undefined, context,
@@ -207,7 +215,7 @@ export function createComponent (
 
 export function createComponentInstanceForVnode (
   vnode: any, // we know it's MountedComponentVNode but flow doesn't
-  parent: any, // activeInstance in lifecycle state
+  parent: any, // activeInstance in lifecycle st ate
 ): Component {
   const options: InternalComponentOptions = {
     _isComponent: true,
@@ -220,9 +228,11 @@ export function createComponentInstanceForVnode (
     options.render = inlineTemplate.render
     options.staticRenderFns = inlineTemplate.staticRenderFns
   }
+  // Ctor为extend 返回的Sub 然后执行Sub Sub继承Vue 所以会去执行Vue里面的_init方法
   return new vnode.componentOptions.Ctor(options)
 }
 
+// 将componentVNodeHooks merge到组件hooks上
 function installComponentHooks (data: VNodeData) {
   const hooks = data.hook || (data.hook = {})
   for (let i = 0; i < hooksToMerge.length; i++) {

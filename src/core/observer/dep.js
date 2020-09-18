@@ -8,9 +8,12 @@ let uid = 0
 
 /**
  * A dep is an observable that can have multiple
- * directives subscribing to it.
+ * directives subscribing to it.  dep是一个可以有多个指令订阅的可观察对象。
+ * 建立数据与watcher之间的桥梁
+ * 作为发布订阅模式的调度中心
  */
 export default class Dep {
+  // Watcher是全局一个变量
   static target: ?Watcher;
   id: number;
   subs: Array<Watcher>;
@@ -20,15 +23,18 @@ export default class Dep {
     this.subs = []
   }
 
+  // 添加观察者
   addSub (sub: Watcher) {
     this.subs.push(sub)
   }
 
+  // 移除观察者
   removeSub (sub: Watcher) {
     remove(this.subs, sub)
   }
 
   depend () {
+    // 如果当前有观察者 将dep放进当前观察者的deps中
     if (Dep.target) {
       Dep.target.addDep(this)
     }

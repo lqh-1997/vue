@@ -17,6 +17,7 @@ import {
   warn,
   bind,
   noop,
+  // shared/util/hasOwn
   hasOwn,
   hyphenate,
   isReserved,
@@ -36,18 +37,22 @@ const sharedPropertyDefinition = {
 }
 
 export function proxy (target: Object, sourceKey: string, key: string) {
+  // initData的时候sourceKey为`_data`, _data在 initData中被赋值了
   sharedPropertyDefinition.get = function proxyGetter () {
     return this[sourceKey][key]
   }
   sharedPropertyDefinition.set = function proxySetter (val) {
     this[sourceKey][key] = val
   }
+  // Object.defineProperty在对象上定义一个新属性 或者修改一个现有属性 然后返回此对象 第三个参数为要定义或修改的属性描述符
+  // 现在vm上面就挂载了传进来的key 并且getter和setter被重写了
   Object.defineProperty(target, key, sharedPropertyDefinition)
 }
 
 export function initState (vm: Component) {
   vm._watchers = []
   const opts = vm.$options
+  // 初始化props methods data
   if (opts.props) initProps(vm, opts.props)
   if (opts.methods) initMethods(vm, opts.methods)
   if (opts.data) {
@@ -62,6 +67,7 @@ export function initState (vm: Component) {
 }
 
 function initProps (vm: Component, propsOptions: Object) {
+  // 拿到options中的propsData 和 props
   const propsData = vm.$options.propsData || {}
   const props = vm._props = {}
   // cache prop keys so that future props updates can iterate using Array
@@ -72,10 +78,14 @@ function initProps (vm: Component, propsOptions: Object) {
   if (!isRoot) {
     toggleObserving(false)
   }
+  // 遍历props中的key
   for (const key in propsOptions) {
     keys.push(key)
+    // 对prop进行校验
     const value = validateProp(key, propsOptions, propsData, vm)
     /* istanbul ignore else */
+    // defineReactive这个方法就是将props上的key变成响应式的
+    // 非生产环境下包含了保留字的警告 以及子组件改变prop值的警告
     if (process.env.NODE_ENV !== 'production') {
       const hyphenatedKey = hyphenate(key)
       if (isReservedAttribute(hyphenatedKey) ||
@@ -110,10 +120,13 @@ function initProps (vm: Component, propsOptions: Object) {
 }
 
 function initData (vm: Component) {
+  // 获得data
   let data = vm.$options.data
+  // 如果data是一个对象就调用getData
   data = vm._data = typeof data === 'function'
     ? getData(data, vm)
     : data || {}
+  // 如果最终结果不是对象就报一个警报
   if (!isPlainObject(data)) {
     data = {}
     process.env.NODE_ENV !== 'production' && warn(
@@ -123,6 +136,7 @@ function initData (vm: Component) {
     )
   }
   // proxy data on instance
+  // 获取keys props methods 的键名
   const keys = Object.keys(data)
   const props = vm.$options.props
   const methods = vm.$options.methods
@@ -130,6 +144,7 @@ function initData (vm: Component) {
   while (i--) {
     const key = keys[i]
     if (process.env.NODE_ENV !== 'production') {
+      // hasOwn实际上就是hasOwnProperty 判断methods对象里面有没有和data命名冲突的
       if (methods && hasOwn(methods, key)) {
         warn(
           `Method "${key}" has already been defined as a data property.`,
@@ -137,17 +152,19 @@ function initData (vm: Component) {
         )
       }
     }
+    // 判断props对象里面有没有和data命名冲突的
     if (props && hasOwn(props, key)) {
       process.env.NODE_ENV !== 'production' && warn(
         `The data property "${key}" is already declared as a prop. ` +
         `Use prop default value instead.`,
         vm
       )
+      // 如果是不存在_ 或者 $开头的key 就通过proxy挂载在vm上
     } else if (!isReserved(key)) {
       proxy(vm, `_data`, key)
     }
   }
-  // observe data
+  // 观察这个 data
   observe(data, true /* asRootData */)
 }
 
