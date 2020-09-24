@@ -191,6 +191,7 @@ function initComputed (vm: Component, computed: Object) {
 
   for (const key in computed) {
     const userDef = computed[key]
+    // 如果computed中的为对象 则该对象要有get属性
     const getter = typeof userDef === 'function' ? userDef : userDef.get
     if (process.env.NODE_ENV !== 'production' && getter == null) {
       warn(
@@ -215,6 +216,7 @@ function initComputed (vm: Component, computed: Object) {
     if (!(key in vm)) {
       defineComputed(vm, key, userDef)
     } else if (process.env.NODE_ENV !== 'production') {
+      // computed里的key在data或者props中已经定义过了就报警告
       if (key in vm.$data) {
         warn(`The computed property "${key}" is already defined in data.`, vm)
       } else if (vm.$options.props && key in vm.$options.props) {
@@ -229,6 +231,7 @@ export function defineComputed (
   key: string,
   userDef: Object | Function
 ) {
+  // 不是serverRendering 为 true
   const shouldCache = !isServerRendering()
   if (typeof userDef === 'function') {
     sharedPropertyDefinition.get = shouldCache
@@ -256,6 +259,8 @@ export function defineComputed (
 }
 
 function createComputedGetter (key) {
+  // 这个函数将会返回作为组件的getter
+  // app渲染的时候会做一次访问 访问computed定义的那个值 然后触发这个函数
   return function computedGetter () {
     const watcher = this._computedWatchers && this._computedWatchers[key]
     if (watcher) {
@@ -307,6 +312,7 @@ function initMethods (vm: Component, methods: Object) {
 function initWatch (vm: Component, watch: Object) {
   for (const key in watch) {
     const handler = watch[key]
+    // watch里面可以定义一个数组 如果是数组 就要遍历数组 执行createWatcher
     if (Array.isArray(handler)) {
       for (let i = 0; i < handler.length; i++) {
         createWatcher(vm, key, handler[i])
@@ -317,19 +323,23 @@ function initWatch (vm: Component, watch: Object) {
   }
 }
 
+// 主要是做数据规范化
 function createWatcher (
   vm: Component,
   expOrFn: string | Function,
   handler: any,
   options?: Object
 ) {
+  // handler是对象 获取handler.handler
   if (isPlainObject(handler)) {
     options = handler
     handler = handler.handler
   }
+  // 是string就直接获取vm.handler
   if (typeof handler === 'string') {
     handler = vm[handler]
   }
+  // expOrFn是观测的对象 handler是回调函数
   return vm.$watch(expOrFn, handler, options)
 }
 
@@ -365,12 +375,14 @@ export function stateMixin (Vue: Class<Component>) {
     options?: Object
   ): Function {
     const vm: Component = this
+    // 有可能直接调用原型上的$watch，所以这里就是为了将这种情况下的watch规范化
     if (isPlainObject(cb)) {
       return createWatcher(vm, expOrFn, cb, options)
     }
     options = options || {}
     options.user = true
     const watcher = new Watcher(vm, expOrFn, cb, options)
+    // 如果有immediate就代表立即执行该函数一次
     if (options.immediate) {
       try {
         cb.call(vm, watcher.value)
@@ -378,6 +390,7 @@ export function stateMixin (Vue: Class<Component>) {
         handleError(error, vm, `callback for immediate watcher "${watcher.expression}"`)
       }
     }
+    // 返回一个销毁watcher的函数
     return function unwatchFn () {
       watcher.teardown()
     }

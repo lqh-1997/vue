@@ -76,7 +76,7 @@ function flushSchedulerQueue () {
   // Sort queue before flush.
   // This ensures that:
   // 1. Components are updated from parent to child. (because parent is always
-  //    created before the child)
+  //    created before the child) 组件更新是从父到子
   // 2. A component's user watchers are run before its render watcher (because
   //    user watchers are created before the render watcher)
   // 3. If a component is destroyed during a parent component's watcher run,
@@ -157,12 +157,13 @@ function callActivatedHooks (queue) {
 }
 
 /**
- * Push a watcher into the watcher queue.
- * Jobs with duplicate IDs will be skipped unless it's
- * pushed when the queue is being flushed.
+ * Push a watcher into the watcher queue.               将watcher推入watcher队列中
+ * Jobs with duplicate IDs will be skipped unless it's  具有相同id的jobs将会被跳过
+ * pushed when the queue is being flushed.              除非它在队列刷新的时候被推入
  */
 export function queueWatcher (watcher: Watcher) {
   const id = watcher.id
+  // 保证多次触发queueWatcher但是只执行一次queue.push(watcher)
   if (has[id] == null) {
     has[id] = true
     if (!flushing) {

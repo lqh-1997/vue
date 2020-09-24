@@ -22,6 +22,9 @@ let uid = 0
  * A watcher parses an expression, collects dependencies,
  * and fires callback when the expression value changes.
  * This is used for both the $watch() api and directives.
+ * 计算属性computed 为lazyWatcher
+ * 侦听属性watched 为userWatcher
+ * 组件挂载的时候 为renderWatcher
  */
 export default class Watcher {
   vm: Component;
@@ -79,6 +82,7 @@ export default class Watcher {
     if (typeof expOrFn === 'function') {
       this.getter = expOrFn
     } else {
+      // watch有可能传进来一个字符串 结果返回一个函数 该函数在get()里面执行 最终获取到watch中定义的函数
       this.getter = parsePath(expOrFn)
       if (!this.getter) {
         this.getter = noop
@@ -103,6 +107,7 @@ export default class Watcher {
     let value
     const vm = this.vm
     try {
+      // 在获取watch中定义的函数的时候 vm.[watch.key] 就会触发响应式get 然后订阅watch.key的变化
       value = this.getter.call(vm, vm)
     } catch (e) {
       if (this.user) {
@@ -113,6 +118,7 @@ export default class Watcher {
     } finally {
       // "touch" every property so they are all tracked as
       // dependencies for deep watching
+      // 访问对象深层的值 访问的时候就会触发getter 收集依赖 最终改变就会更新
       if (this.deep) {
         traverse(value)
       }
@@ -168,6 +174,7 @@ export default class Watcher {
     } else if (this.sync) {
       this.run()
     } else {
+      // 将watcher推到队列里 然后在下一个nextTick里执行
       queueWatcher(this)
     }
   }

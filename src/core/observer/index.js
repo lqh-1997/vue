@@ -33,6 +33,7 @@ export function toggleObserving (value: boolean) {
  * object. Once attached, the observer converts the target
  * object's property keys into getter/setters that
  * collect dependencies and dispatch updates.
+ * 数据劫持 发布者 主要通过递归调用defineReactive实现
  */
 export class Observer {
   value: any;
@@ -53,7 +54,7 @@ export class Observer {
       } else {
         copyAugment(value, arrayMethods, arrayKeys)
       }
-      // 遍历数组每一项 然后调用observe
+      // 遍历数组每一项 然后调用observe 递归
       this.observeArray(value)
     } else {
       // 遍历对象上所有的属性 然后调用defineReactive()
@@ -127,7 +128,7 @@ export function observe (value: any, asRootData: ?boolean): Observer | void {
     !isServerRendering() &&
     // 是数组 或者 是对象
     (Array.isArray(value) || isPlainObject(value)) &&
-    // 该对象为可扩展的
+    // 该对象为可扩展的   Object.seal和Object.freeze的对象不可扩展 不是对象也不能扩展
     Object.isExtensible(value) &&
     // 不是Vue实例
     !value._isVue
@@ -191,6 +192,7 @@ export function defineReactive (
     set: function reactiveSetter (newVal) {
       const value = getter ? getter.call(obj) : val
       /* eslint-disable no-self-compare */
+      // 新旧值进行比较 相同就什么都不做
       if (newVal === value || (newVal !== newVal && value !== value)) {
         return
       }
@@ -206,6 +208,7 @@ export function defineReactive (
         val = newVal
       }
       childOb = !shallow && observe(newVal)
+      // 派发更新的过程
       dep.notify()
     }
   })

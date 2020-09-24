@@ -39,6 +39,7 @@ let timerFunc
 // completely stops working after triggering a few times... so, if native
 // Promise is available, we will use it:
 /* istanbul ignore next, $flow-disable-line */
+// 进行运行环境的判断 如果支持Promise或者MutationObserver就将isUsingMicroTask置为true
 if (typeof Promise !== 'undefined' && isNative(Promise)) {
   const p = Promise.resolve()
   timerFunc = () => {
@@ -60,11 +61,14 @@ if (typeof Promise !== 'undefined' && isNative(Promise)) {
   // e.g. PhantomJS, iOS7, Android 4.4
   // (#6466 MutationObserver is unreliable in IE11)
   let counter = 1
+  // 传入节点变动时调用的回调函数
   const observer = new MutationObserver(flushCallbacks)
+  // 新建一个节点
   const textNode = document.createTextNode(String(counter))
   observer.observe(textNode, {
     characterData: true
   })
+  // 观察到节点变动
   timerFunc = () => {
     counter = (counter + 1) % 2
     textNode.data = String(counter)
@@ -102,6 +106,7 @@ export function nextTick (cb?: Function, ctx?: Object) {
     timerFunc()
   }
   // $flow-disable-line
+  // 不存在callback 当nextTick为Promise this.nextTick().then()
   if (!cb && typeof Promise !== 'undefined') {
     return new Promise(resolve => {
       _resolve = resolve
