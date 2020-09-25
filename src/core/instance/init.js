@@ -49,12 +49,14 @@ export function initMixin (Vue: Class<Component>) {
       )
     }
     /* istanbul ignore else */
-    // 生产环境renderProxy就是vm本身 其他环境则调用initProxy
+    // 生产环境renderProxy就是vm本身 其他环境则调用initProxy 将vm._renderProxy赋值成了一个Proxy实例
     if (process.env.NODE_ENV !== 'production') {
       initProxy(vm)
     } else {
       vm._renderProxy = vm
     }
+
+    // 初始化各种参数 挂载在实例上
     // 把vm挂载在Vue._self中 然后初始化
     vm._self = vm
     initLifecycle(vm)
@@ -77,6 +79,7 @@ export function initMixin (Vue: Class<Component>) {
     // 这里就判断$options有没有我们传入的那个el
     // https://cn.vuejs.org/v2/guide/instance.html#生命周期图示
     if (vm.$options.el) {
+      // web/runtime/index
       vm.$mount(vm.$options.el)
     }
   }

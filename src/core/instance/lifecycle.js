@@ -193,6 +193,7 @@ export function mountComponent (
   } else {
     updateComponent = () => {
       // 调用Vue原型上的_render()方法(core/instance/render)，然后再调用_update()
+      // 数据发生变化 这个方法会在nextTick之后重新执行
       vm._update(vm._render(), hydrating)
     }
   }

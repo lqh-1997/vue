@@ -715,6 +715,7 @@ export function createPatchFunction (backend) {
       createElm(vnode, insertedVnodeQueue)
     } else {
       const isRealElement = isDef(oldVnode.nodeType)
+      // 对比新旧节点是否相同
       if (!isRealElement && sameVnode(oldVnode, vnode)) {
         // patch existing root node
         patchVnode(oldVnode, vnode, insertedVnodeQueue, null, null, removeOnly)
@@ -752,7 +753,7 @@ export function createPatchFunction (backend) {
         const oldElm = oldVnode.elm
         const parentElm = nodeOps.parentNode(oldElm)
 
-        // create new node
+        // 创建一个新的节点
         // 将vNode挂载在真实的dom上
         createElm(
           vnode,
@@ -765,14 +766,17 @@ export function createPatchFunction (backend) {
         )
 
         // update parent placeholder node element, recursively
+        // 更新父的占位符节点
         if (isDef(vnode.parent)) {
           let ancestor = vnode.parent
+          // 判断当前的节点是不是可挂载的
           const patchable = isPatchable(vnode)
           while (ancestor) {
             for (let i = 0; i < cbs.destroy.length; ++i) {
               cbs.destroy[i](ancestor)
             }
             ancestor.elm = vnode.elm
+            // 执行一些钩子函数
             if (patchable) {
               for (let i = 0; i < cbs.create.length; ++i) {
                 cbs.create[i](emptyNode, ancestor)
@@ -795,6 +799,7 @@ export function createPatchFunction (backend) {
         }
 
         // destroy old node
+        // 删除旧的节点
         if (isDef(parentElm)) {
           removeVnodes([oldVnode], 0, 0)
         } else if (isDef(oldVnode.tag)) {
