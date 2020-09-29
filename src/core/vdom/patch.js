@@ -84,6 +84,7 @@ export function createPatchFunction (backend) {
     }
   }
 
+  // new VNode.elm被赋值为真实的DOM
   function emptyNodeAt (elm) {
     return new VNode(nodeOps.tagName(elm).toLowerCase(), {}, [], undefined, elm)
   }
@@ -191,6 +192,7 @@ export function createPatchFunction (backend) {
           insert(parentElm, vnode.elm, refElm)
         }
       } else {
+        // 如果vNode的还有子节点就创建子节点 如果子节点是array还会再次调用createElm该方法
         createChildren(vnode, children, insertedVnodeQueue)
         if (isDef(data)) {
           invokeCreateHooks(vnode, insertedVnodeQueue)
@@ -276,6 +278,7 @@ export function createPatchFunction (backend) {
     if (isDef(parent)) {
       if (isDef(ref)) {
         if (nodeOps.parentNode(ref) === parent) {
+          // 当前已有子节点之前插入新的子节点
           nodeOps.insertBefore(parent, elm, ref)
         }
       } else {
@@ -289,6 +292,7 @@ export function createPatchFunction (backend) {
       if (process.env.NODE_ENV !== 'production') {
         checkDuplicateKeys(children)
       }
+      // 如果是array 就递归调用createElm
       for (let i = 0; i < children.length; ++i) {
         createElm(children[i], insertedVnodeQueue, vnode.elm, null, true, children, i)
       }
@@ -744,7 +748,7 @@ export function createPatchFunction (backend) {
           }
           // either not server-rendered, or hydration failed.
           // create an empty node and replace it
-          // 将真实的dom转换成vNode
+          // 将真实的dom转换成vNode 转换完之后 两个形参都为vNode
           oldVnode = emptyNodeAt(oldVnode)
         }
 

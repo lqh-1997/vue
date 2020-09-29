@@ -34,7 +34,7 @@ export function initRender (vm: Component) {
   vm._c = (a, b, c, d) => createElement(vm, a, b, c, d, false)
   // normalization is always applied for the public version, used in
   // user-written render functions.
-  // 手写render的方法创建vnode的方法
+  // 手写render的方法创建vnode的方法 渲染的时候之间显示 不会经过插值转换
   vm.$createElement = (a, b, c, d) => createElement(vm, a, b, c, d, true)
 
   // $attrs & $listeners are exposed for easier HOC creation.
@@ -71,6 +71,7 @@ export function renderMixin (Vue: Class<Component>) {
     return nextTick(fn, this)
   }
 
+  // 在这里返回vNode 内部通过createElement创建vNode
   Vue.prototype._render = function (): VNode {
     const vm: Component = this
     // 首先从$options拿到render函数 由用户输入或者编译产生

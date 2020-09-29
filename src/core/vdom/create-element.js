@@ -41,6 +41,7 @@ export function createElement (
   data: any,
   children: any,
   normalizationType: any,
+  // 手写render这个为true 使用template这个为false
   alwaysNormalize: boolean
 ): VNode | Array<VNode> {
   // data这个参数可以为空 所以判断data如果是一个数组或者是一个基本类型，就去掉data，其他参数往前移一位
@@ -78,6 +79,7 @@ export function _createElement (
   }
   // 防止component :is设置为false
   if (!tag) {
+    // 创建一个注释节点
     return createEmptyVNode()
   }
   // key不是基础类型就警告

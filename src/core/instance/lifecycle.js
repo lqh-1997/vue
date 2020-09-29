@@ -69,6 +69,7 @@ export function lifecycleMixin (Vue: Class<Component>) {
     if (!prevVnode) {
       // 如果不存在更新前的vnode 初始化render 比如说首次渲染的时候逻辑就会走这个地方
       // __patch__在入口定义`src/platforms/web/runtime/index` 第一个参数为真实的dom，第二个为vDom
+      // 最终调用的patch为core/vdom/path.js里面返回的patch function
       vm.$el = vm.__patch__(vm.$el, vnode, hydrating, false /* removeOnly */)
     } else {
       // updates
