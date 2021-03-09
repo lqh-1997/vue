@@ -11,7 +11,7 @@ import { isFalse, isTrue, isDef, isUndef, isPrimitive } from 'shared/util'
 // generated render function is guaranteed to return Array<VNode>. There are
 // two cases where extra normalization is needed:
 // 当子节点中包含组件 因为函数化组件可能返回的是一个Array而不是一个根节点 这种情况下 只需要simple normalization
-// 如果任一子节点是一个数组 我们通过Array.prototype.concat将其拍平 因为函数化组件已经normalize它们的子节点 所以将保证该数组只有一层的深度
+// 如果任一子节点是一个数组 我们通过Array.prototype.concat将其拍平 因为函数式组件已经normalize它们的子节点 所以将保证该数组只有一层的深度
 // 1. When the children contains components - because a functional component
 // may return an Array instead of a single root. In this case, just a simple
 // normalization is needed - if any child is an Array, we flatten the whole
@@ -47,7 +47,7 @@ function isTextNode (node): boolean {
   return isDef(node) && isDef(node.text) && isFalse(node.isComment)
 }
 
-// 生成一个一维的vnode
+// 生成一个一维的vnode数组 如果遇到连续两个textVNode就合并
 function normalizeArrayChildren (children: any, nestedIndex?: string): Array<VNode> {
   // 返回值
   const res = []
@@ -66,7 +66,7 @@ function normalizeArrayChildren (children: any, nestedIndex?: string): Array<VNo
         // 递归该数组 返回一个VNode数组
         c = normalizeArrayChildren(c, `${nestedIndex || ''}_${i}`)
         // merge adjacent text nodes
-        // 优化 如果两个都为文本节点 我就将这两个节点合并成一个
+        // res中的最后一个和当前处理的children[0]如果都是TextNode 为了优化就直接将它们进行合并并直接放入res尾部 然后将children[0]中的该项删掉
         if (isTextNode(c[0]) && isTextNode(last)) {
           res[lastIndex] = createTextVNode(last.text + (c[0]: any).text)
           c.shift()
@@ -75,7 +75,7 @@ function normalizeArrayChildren (children: any, nestedIndex?: string): Array<VNo
       }
       // 如果是一个基本类型
     } else if (isPrimitive(c)) {
-      // 合并
+      // 和最后一个进行比较是不是text
       if (isTextNode(last)) {
         // merge adjacent text nodes
         // this is necessary for SSR hydration because text nodes are

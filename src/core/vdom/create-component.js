@@ -33,6 +33,7 @@ import {
 } from 'weex/runtime/recycle-list/render-component-template'
 
 // inline hooks to be invoked on component VNodes during patch
+// 组件的钩子
 const componentVNodeHooks = {
   init (vnode: VNodeWithData, hydrating: boolean): ?boolean {
     if (
@@ -44,6 +45,7 @@ const componentVNodeHooks = {
       const mountedNode: any = vnode // work around flow
       componentVNodeHooks.prepatch(mountedNode, mountedNode)
     } else {
+      // 传入当前组件的vnode 第二个参数在initLifecycle定义了 是一个全局变量
       const child = vnode.componentInstance = createComponentInstanceForVnode(
         vnode,
         activeInstance
@@ -157,14 +159,17 @@ export function createComponent (
   resolveConstructorOptions(Ctor)
 
   // transform component v-model data into props & events
+  // 对v-model进行处理
   if (isDef(data.model)) {
     transformModel(Ctor.options, data)
   }
 
   // extract props
+  // 对props进行处理
   const propsData = extractPropsFromVNodeData(data, Ctor, tag)
 
   // functional component
+  // 函数组件
   if (isTrue(Ctor.options.functional)) {
     return createFunctionalComponent(Ctor, propsData, data, context, children)
   }
@@ -217,6 +222,7 @@ export function createComponentInstanceForVnode (
   vnode: any, // we know it's MountedComponentVNode but flow doesn't
   parent: any, // activeInstance in lifecycle st ate
 ): Component {
+  // 将第二个_parentVnode理解成占位符VNode
   const options: InternalComponentOptions = {
     _isComponent: true,
     _parentVnode: vnode,
@@ -228,18 +234,21 @@ export function createComponentInstanceForVnode (
     options.render = inlineTemplate.render
     options.staticRenderFns = inlineTemplate.staticRenderFns
   }
-  // Ctor为extend 返回的Sub 然后执行Sub Sub继承Vue 所以会去执行Vue里面的_init方法
+  // 因为在new VNode的时候将Ctor作为componentOptions的参数传递过去了 所以Ctor是子构造器Sub
+  // 这里就相当于执行了Sub的构造函数
   return new vnode.componentOptions.Ctor(options)
 }
 
 // 将componentVNodeHooks merge到组件hooks上
 function installComponentHooks (data: VNodeData) {
   const hooks = data.hook || (data.hook = {})
+  // 遍历组件上的钩子 本文件最上面
   for (let i = 0; i < hooksToMerge.length; i++) {
     const key = hooksToMerge[i]
     const existing = hooks[key]
     const toMerge = componentVNodeHooks[key]
     if (existing !== toMerge && !(existing && existing._merged)) {
+      // data.hook上存在该属性吗 存在就merge 不存在直接赋值
       hooks[key] = existing ? mergeHook(toMerge, existing) : toMerge
     }
   }

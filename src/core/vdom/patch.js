@@ -215,7 +215,9 @@ export function createPatchFunction (backend) {
   function createComponent (vnode, insertedVnodeQueue, parentElm, refElm) {
     let i = vnode.data
     if (isDef(i)) {
+      // keepAlive
       const isReactivated = isDef(vnode.componentInstance) && i.keepAlive
+      // 拿到data.hook 然后执行init
       if (isDef(i = i.hook) && isDef(i = i.init)) {
         i(vnode, false /* hydrating */)
       }
@@ -223,6 +225,8 @@ export function createPatchFunction (backend) {
       // it should've created a child instance and mounted it. the child
       // component also has set the placeholder vnode's elm.
       // in that case we can just return the element and be done.
+      // 子组件patch过程中不会执行dom 操作，在子组件整个patch过程执行完成后，最后将会执行insert
+      // 子组件和父组件的insert过程应该是先子后父的
       if (isDef(vnode.componentInstance)) {
         initComponent(vnode, insertedVnodeQueue)
         insert(parentElm, vnode.elm, refElm)
@@ -716,6 +720,7 @@ export function createPatchFunction (backend) {
     if (isUndef(oldVnode)) {
       // empty mount (likely as component), create new root element
       isInitialPatch = true
+      // 如果没有旧节点 就
       createElm(vnode, insertedVnodeQueue)
     } else {
       const isRealElement = isDef(oldVnode.nodeType)

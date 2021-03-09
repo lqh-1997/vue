@@ -126,7 +126,6 @@ export function _createElement (
         config.parsePlatformTagName(tag), data, children,
         undefined, undefined, context
       )
-      // 如果是组件
     } else if ((!data || !data.pre) && isDef(Ctor = resolveAsset(context.$options, 'components', tag))) {
       // component
       vnode = createComponent(Ctor, data, context, children, tag)
@@ -141,6 +140,7 @@ export function _createElement (
       )
     }
   } else {
+    // 如果是组件
     // direct component options / constructor
     vnode = createComponent(tag, data, context, children)
   }

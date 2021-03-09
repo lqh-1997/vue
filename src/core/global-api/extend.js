@@ -37,6 +37,7 @@ export function initExtend (Vue: GlobalAPI) {
     const Sub = function VueComponent (options) {
       this._init(options)
     }
+    // Sub对Super继承
     Sub.prototype = Object.create(Super.prototype)
     Sub.prototype.constructor = Sub
     // 唯一确定的id

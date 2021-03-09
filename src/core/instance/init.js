@@ -86,7 +86,7 @@ export function initMixin (Vue: Class<Component>) {
 }
 
 export function initInternalComponent (vm: Component, options: InternalComponentOptions) {
-  // vm本身没有constructor方法 所以会取Vue.prototype上面找 所以相当于Vue.options
+  // vm本身没有constructor方法 所以会去 构造器.prototype上面找 所以相当于 构造器.options
   const opts = vm.$options = Object.create(vm.constructor.options)
   // doing this because it's faster than dynamic enumeration.
   const parentVnode = options._parentVnode

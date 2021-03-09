@@ -133,6 +133,7 @@ export function renderMixin (Vue: Class<Component>) {
       vnode = createEmptyVNode()
     }
     // set parent
+    // 将parent指向占位符vnode
     vnode.parent = _parentVnode
     return vnode
   }
