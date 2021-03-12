@@ -256,6 +256,7 @@ strats.computed = function (
   }
   if (!parentVal) return childVal
   const ret = Object.create(null)
+  // extend 为存在相同的属性情况下 用后者覆盖前者
   extend(ret, parentVal)
   if (childVal) extend(ret, childVal)
   return ret
@@ -266,6 +267,7 @@ strats.provide = mergeDataOrFn
  * Default strategy.
  */
 const defaultStrat = function (parentVal: any, childVal: any): any {
+  // 第二个参数不存在直接返回第一个
   return childVal === undefined
     ? parentVal
     : childVal
@@ -403,6 +405,7 @@ export function mergeOptions (
     child = child.options
   }
 
+  // 对输入的数据进行规范化处理
   normalizeProps(child, vm)
   normalizeInject(child, vm)
   normalizeDirectives(child)

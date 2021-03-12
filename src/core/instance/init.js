@@ -62,6 +62,7 @@ export function initMixin (Vue: Class<Component>) {
     initLifecycle(vm)
     initEvents(vm)
     initRender(vm)
+    // beforeCreate 拿不到data props等 (initState)
     callHook(vm, 'beforeCreate')
     initInjections(vm) // resolve injections before data/props
     // 初始化props method data
