@@ -140,6 +140,7 @@ export function createComponent (
   if (isUndef(Ctor.cid)) {
     asyncFactory = Ctor
     Ctor = resolveAsyncComponent(asyncFactory, baseCtor)
+    // 同步的时候由于返回undefined 所以会走这里的逻辑然后生成一个占位节点
     if (Ctor === undefined) {
       // return a placeholder node for async component, which is rendered
       // as a comment node but preserves all the raw information for the node.

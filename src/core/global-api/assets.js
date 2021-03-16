@@ -29,6 +29,7 @@ export function initAssetRegisters (Vue: GlobalAPI) {
         if (type === 'directive' && typeof definition === 'function') {
           definition = { bind: definition, update: definition }
         }
+        // 在this.options.components[id]加上该定义
         this.options[type + 's'][id] = definition
         return definition
       }

@@ -75,6 +75,7 @@ function initProps (vm: Component, propsOptions: Object) {
   const keys = vm.$options._propKeys = []
   const isRoot = !vm.$parent
   // root instance props should be converted
+  // 如果存在$parent就意味着不需要再次observe
   if (!isRoot) {
     toggleObserving(false)
   }

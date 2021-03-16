@@ -44,9 +44,9 @@ export class Observer {
     this.value = value
     this.dep = new Dep()
     this.vmCount = 0
-    // def实际就是对defineProperty进行一次封装
+    // def实际就是对defineProperty进行一次封装 __ob__属性在此处是不可枚举的
     // 这里就是给value添加一个__ob__属性并且该属性的值就为当前实例
-    // 这里不写成value.__ob__ = this的原因是为了不在walk中遍历属性的时候也遍历__ob__
+    // 由于不可枚举 所以walk中遍历属性的时候不会遍历__ob__
     def(value, '__ob__', this)
     if (Array.isArray(value)) {
       if (hasProto) {
