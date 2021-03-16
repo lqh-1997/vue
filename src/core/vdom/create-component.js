@@ -68,10 +68,12 @@ const componentVNodeHooks = {
 
   insert (vnode: MountedComponentVNode) {
     const { context, componentInstance } = vnode
+    // 将组件状态更改成已经挂载
     if (!componentInstance._isMounted) {
       componentInstance._isMounted = true
       callHook(componentInstance, 'mounted')
     }
+    // keepAlive相关
     if (vnode.data.keepAlive) {
       if (context._isMounted) {
         // vue-router#1212

@@ -132,6 +132,8 @@ function callUpdatedHooks (queue) {
   while (i--) {
     const watcher = queue[i]
     const vm = watcher.vm
+    // 是一个渲染watcher 并且已经mounted过
+    // 也就是说首次渲染并不会调用updated 重新渲染才会执行update
     if (vm._watcher === watcher && vm._isMounted && !vm._isDestroyed) {
       callHook(vm, 'updated')
     }
