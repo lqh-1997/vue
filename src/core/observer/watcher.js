@@ -82,7 +82,7 @@ export default class Watcher {
     if (typeof expOrFn === 'function') {
       this.getter = expOrFn
     } else {
-      // watch有可能传进来一个字符串 结果返回一个函数 该函数在get()里面执行 最终获取到watch中定义的函数
+      // user watch有可能传进来一个字符串(key) 然后通过parsePath返回一个函数 该函数接收一个参数比如说vm 然后调用该函数的时候就相当于访问到vm.key
       this.getter = parsePath(expOrFn)
       if (!this.getter) {
         this.getter = noop
@@ -94,6 +94,7 @@ export default class Watcher {
         )
       }
     }
+    // computed并不会立马求值 而是在访问到该值的时候触发到computed的getter
     this.value = this.lazy
       ? undefined
       : this.get()
@@ -107,7 +108,7 @@ export default class Watcher {
     let value
     const vm = this.vm
     try {
-      // 在获取watch中定义的函数的时候 vm.[watch.key] 就会触发响应式get 然后订阅watch.key的变化
+      // user watch此处访问的就是上面parsePath返回的函数 通过访问vm.key的方式来触发get 然后响应收集
       value = this.getter.call(vm, vm)
     } catch (e) {
       if (this.user) {
@@ -153,6 +154,8 @@ export default class Watcher {
         dep.removeSub(this)
       }
     }
+    // depIds就是对 newDepIds的保留(只在这里进行了赋值)
+    // deps同上
     let tmp = this.depIds
     this.depIds = this.newDepIds
     this.newDepIds = tmp

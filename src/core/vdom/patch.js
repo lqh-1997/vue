@@ -33,6 +33,7 @@ export const emptyNode = new VNode('', {}, [])
 const hooks = ['create', 'activate', 'update', 'remove', 'destroy']
 
 function sameVnode (a, b) {
+  // 首要条件key要相同 然后如果是普通节点的话(tag相同 是否注释相同 是否都定义了data 都是input且type相同) 如果是异步占位符节点(...)
   return (
     a.key === b.key && (
       (
@@ -729,6 +730,7 @@ export function createPatchFunction (backend) {
         // patch existing root node
         patchVnode(oldVnode, vnode, insertedVnodeQueue, null, null, removeOnly)
       } else {
+        // 新旧节点不同 将分成3个步骤
         if (isRealElement) {
           // mounting to a real element
           // check if this is server-rendered content and if we can perform
@@ -762,7 +764,7 @@ export function createPatchFunction (backend) {
         const oldElm = oldVnode.elm
         const parentElm = nodeOps.parentNode(oldElm)
 
-        // 创建一个新的节点
+        // 1. 创建一个新的节点
         // 将vNode挂载在真实的dom上
         createElm(
           vnode,
@@ -775,7 +777,7 @@ export function createPatchFunction (backend) {
         )
 
         // update parent placeholder node element, recursively
-        // 更新父的占位符节点
+        // 2. 更新父的占位符节点
         if (isDef(vnode.parent)) {
           let ancestor = vnode.parent
           // 判断当前的节点是不是可挂载的
@@ -808,7 +810,7 @@ export function createPatchFunction (backend) {
         }
 
         // destroy old node
-        // 删除旧的节点
+        // 3. 删除旧的节点
         if (isDef(parentElm)) {
           removeVnodes([oldVnode], 0, 0)
         } else if (isDef(oldVnode.tag)) {

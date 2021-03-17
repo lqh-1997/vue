@@ -39,6 +39,7 @@ export function parsePath (path: string): any {
   const segments = path.split('.')
   // 返回一个函数
   return function (obj) {
+    // 如果watch的key是 'abc.cde'这种 就会先将abc赋值给obj 然后再获取obj上的cde
     for (let i = 0; i < segments.length; i++) {
       if (!obj) return
       obj = obj[segments[i]]
